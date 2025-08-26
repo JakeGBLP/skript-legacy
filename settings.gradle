@@ -1,0 +1,8 @@
+rootProject.name = 'skript-legacy'
+include ':adapter'
+
+file('skript').listFiles()?.each { dir ->
+    if (dir.isDirectory()) {
+        include ":skript:${dir.name}"
+    }
+}

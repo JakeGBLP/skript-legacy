@@ -1,0 +1,71 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
+plugins {
+    id 'java'
+    id 'com.gradleup.shadow' version '8.3.0'
+}
+
+def oldestJava = 16
+
+group = 'it.jakegblp'
+version = '1.0.0'
+
+allprojects {
+    apply plugin: 'java'
+    apply plugin: 'com.gradleup.shadow'
+
+    repositories {
+        mavenCentral()
+        maven { url 'https://repo.papermc.io/repository/maven-public/' }
+        maven { url 'https://oss.sonatype.org/content/groups/public/' }
+        maven { url 'https://repo.skriptlang.org/releases' }
+        maven { url "https://jitpack.io/" }
+    }
+
+    dependencies {
+        compileOnly("org.spigotmc:spigot-api:1.21.8-R0.1-SNAPSHOT")
+        implementation('org.bstats:bstats-bukkit:3.0.2')
+        implementation(files("C:/Users/Jake/IdeaProjects/UpdateChecker/build/libs/UpdateChecker-1.0.0.jar"))
+        implementation('org.jetbrains:annotations:20.1.0')
+        if (project.name != "adapter")
+            implementation project(":adapter")
+        if (project.path.startsWith(":skript:"))
+            compileOnly("com.github.SkriptLang:Skript:$project.name")
+        else
+            compileOnly('com.github.SkriptLang:Skript:2.12.1')
+        println(project.name)
+        if (project.name == "skript-legacy")
+            rootProject.subprojects.each { sub ->
+                if (sub.path.startsWith(":skript:"))
+                    implementation project(sub.path)
+         }
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        options.compilerArgs += ['-source', '' + oldestJava, '-target', '' + oldestJava]
+    }
+
+    shadowJar {
+        archiveFileName = project.name + "-" + project.version + ".jar"
+        relocate 'org.bstats', 'it.jakegblp.skriptlegacy.libs.bstats'
+    }
+
+}
+
+processResources {
+    filter(ReplaceTokens, tokens: [version: version])
+}
+
+
+build {
+    dependsOn shadowJar
+    doLast {
+        subprojects.each { subproject ->
+            subproject.tasks.matching { it.name == "build" }.configureEach {
+                doLast {
+                    delete subproject.layout.buildDirectory
+                }
+            }
+        }
+    }
+}

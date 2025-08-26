@@ -1,0 +1,8 @@
+name: skript-legacy
+version: @version@
+main: it.jakegblp.skriptlegacy.SkriptLegacy
+website: https://github.com/JakeGBLP/skript-legacy
+api-version: 1.13
+authors: [ JakeGBLP ]
+depend: [ Skript ]
+description: Skript Addon that helps supporting older skript versions.
